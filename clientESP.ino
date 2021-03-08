@@ -1,62 +1,80 @@
 #include <ESP8266WiFi.h>
-#include <ESPAsyncTCP.h>
+#include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
 
-extern "C" {
-#include <osapi.h>
-#include <os_type.h>
-}
+#include <ESP8266WiFiMulti.h>
+ESP8266WiFiMulti WiFiMulti;
 
-#include "config.h"                     // Include Config Variables for Server Connection
+const char* ssid = "ESP8266-Access-Point";
+const char* password = "123456789";
 
-static os_timer_t intervalTimer;   
+//Your IP address or domain name with URL path
+const char* serverNameFan = "http://192.168.4.1/fan";
+const char* serverNameHeater = "http://192.168.4.1/heater";
+const char* serverNameLock = "http://192.168.4.1/lock";
+const char* serverNameLight = "http://192.168.4.1/light";
 
-static void replyToServer(void* arg) {                        //
-	AsyncClient* client = reinterpret_cast<AsyncClient*>(arg);
+String fan;
+String heater;
+String lock;
+String light;
 
-	// send reply
-	if (client->space() > 32 && client->canSend()) {                           //Checks to see if Client can send message
-		char message[32];                                                        //Create Message Variable
-		sprintf(message, "this is from %s", WiFi.localIP().toString().c_str());  // Create Message Text
-		client->add(message, strlen(message));                                   // Add Message Text to Message 
-		client->send();                                                          // Send Message
-	}
-}
 
-////////////////// Client Events /////////////////////////////
-static void handleData(void* arg, AsyncClient* client, void *data, size_t len) {              // Data Event Handling Function
-	Serial.printf("\n data received from %s \n", client->remoteIP().toString().c_str());        // Create Message to be send.
-	Serial.write((uint8_t*)data, len);                                                          // Write Message to Serial
-
-	os_timer_arm(&intervalTimer, 2000, true);                                                   // Scheduel Reply Invetval at 2 seconds
-}
-
-void onConnect(void* arg, AsyncClient* client) {                                                  // Connection Event Handeling Function
-	Serial.printf("\n client has been connected to %s on port %d \n", SERVER_HOST_NAME, TCP_PORT);  //Print Connection Information
-	replyToServer(client);                                                                          // Send Client Info as Response to Server
-}
-
+unsigned long previousMillis = 0;
+const long interval = 5000; 
 
 void setup() {
-	Serial.begin(115200);                        // Start Serial Monitor At 115200 baud
-	delay(20);
-
-	// connects to access point
-	WiFi.mode(WIFI_STA);                         // Begin Wifi in STA Mod
-	WiFi.begin(SSID, PASSWORD);                  // Connect to Wifi with SSID and PASSWORD from Config
-	while (WiFi.status() != WL_CONNECTED) {      // While Waiting to connect
-		Serial.print('.');                         // Print a Dot to Serial Monitor
-		delay(500);
-	}
-
-	AsyncClient* client = new AsyncClient;       // Set up Async client as a New Client
-	client->onData(&handleData, client);         // Set up Data Event Handleing
-	client->onConnect(&onConnect, client);       // Set up Connection Event Handeling
-	client->connect(SERVER_HOST_NAME, TCP_PORT); // On Connection Create Connection with Server with given hostname and port in Config File
-
-	os_timer_disarm(&intervalTimer);
-	os_timer_setfn(&intervalTimer, &replyToServer, client);
+  Serial.begin(115200);
+  Serial.println();
+  
+  WiFi.mode(WIFI_STA);                        // Set up Wifi Client Communication
+  WiFiMulti.addAP(ssid, password);            // Connect to Network Using Set Username and Password
+  while((WiFiMulti.run() == WL_CONNECTED)) {  // While waiting to connect
+    delay(500);
+    Serial.print(".");                        //Print point to show pending
+  }
+  Serial.println("");
+  Serial.println("Connected to WiFi");       // Print Connected when finished while loop
 }
 
 void loop() {
+    // Check WiFi connection status
+    if ((WiFiMulti.run() == WL_CONNECTED)) {
+      fan = httpGETRequest(serverNameFan);
+      Serial.println(fan);
+      //heater = httpGETRequest(serverNameHeater);
+      //lock = httpGETRequest(serverNameLock);
+      //light = httpGETRequest(serverNameLight);
+    }
+    else {
+      Serial.println("WiFi Disconnected");
+    }
+}
 
+
+String httpGETRequest(const char* serverName) {
+  WiFiClient client;
+  HTTPClient http;
+    
+  // Your IP address with path or Domain name with URL path 
+  http.begin(client, serverName);
+  
+  // Send HTTP POST request
+  int httpResponseCode = http.GET();
+  
+  String payload = "--"; 
+  
+  if (httpResponseCode>0) {
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpResponseCode);
+    payload = http.getString();
+  }
+  else {
+    Serial.print("Error code: ");
+    Serial.println(httpResponseCode);
+  }
+  // Free resources
+  http.end();
+
+  return payload;
 }
