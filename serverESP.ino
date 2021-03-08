@@ -1,73 +1,49 @@
+// Import required libraries
 #include <ESP8266WiFi.h>
-#include <ESPAsyncTCP.h>
-#include <DNSServer.h>
-#include <vector>
+#include "ESPAsyncWebServer.h"
 
-#include "config.h"
+// Set your access point network credentials
+const char* ssid = "ESP8266-Access-Point";
+const char* password = "123456789";
 
-static DNSServer DNS;
-static std::vector<AsyncClient*> clients;  // A List to Hold all Clients
+// Create AsyncWebServer object on port 80
+AsyncWebServer server(80);
 
-/////////////////////////////////////////// CONNECTION SERVER ///////////////////////////////////////////////
+void setup(){
+  // Serial port for debugging purposes
+  Serial.begin(115200);
+  Serial.println();
+  
+  // Set up Access Point
+  Serial.print("Setting AP (Access Point)…");
+  WiFi.softAP(ssid, password); //Set up Access Point with Set SSID and Password
 
-//////////////////  Client Events /////////////////////////////
-static void handleError(void* arg, AsyncClient* client, int8_t error) {                  //If Statement for Client ERROR Handeling
-	Serial.printf("\n Connection Error %s from client %s \n", client->errorToString(error), client->remoteIP().toString().c_str()); //Print Client Error to Serial
+  IPAddress IP = WiFi.softAPIP(); // Set the IP address by newly created Access Point
+  Serial.print("\nAP IP address: ");
+  Serial.println(IP);             // Print New IP address to Serial Monitor
+
+  server.on("/fan", HTTP_GET, [](AsyncWebServerRequest *request){     // When and HTTP Get Request is made to (IP)/temperature 
+    /////////RUN FUNCTION HERE////////////
+    request->send_P(200, "text/plain", "Is it working");                  // Return Message to Client With        
+  });
+  server.on("/heater", HTTP_GET, [](AsyncWebServerRequest *request){       // When and HTTP Get Request is made to (IP)/humidity
+    /////////RUN FUNCTION HERE////////////
+    request->send_P(200, "text/plain", "Heater ON");                  // Return Message to Client
+  });
+    server.on("/lock", HTTP_GET, [](AsyncWebServerRequest *request){     // When and HTTP Get Request is made to (IP)/temperature 
+    /////////RUN FUNCTION HERE////////////
+    request->send_P(200, "text/plain", "Lock ON");                  // Return Message to Client With        
+  });
+  server.on("/light", HTTP_GET, [](AsyncWebServerRequest *request){       // When and HTTP Get Request is made to (IP)/humidity
+    /////////RUN FUNCTION HERE////////////
+    request->send_P(200, "text/plain", "Light ON");                  // Return Message to Client
+  });
+  
+  bool status;
+ 
+  server.begin();   // Start Server
 }
-
-static void handleData(void* arg, AsyncClient* client, void *data, size_t len) {     //If Statement for Client DATA Handeling
-	Serial.printf(client->remoteIP().toString().c_str());                             //Print Client Data Recieved to Terminal
-	Serial.write((uint8_t*)data, len);
-
-	// Reply to Client
-	if (client->space() > 32 && client->canSend()) {         // Check to See if Client is avaliable
-		char reply[32];                                        // Create Reply Variable
-		sprintf(reply, "this is from %s", SERVER_HOST_NAME);   // Create Replay Message                        
-		client->add(reply, strlen(reply));                     // Add message to reply 
-		client->send();                                        // Send Message to Client
-	}
-}
-
-static void handleDisconnect(void* arg, AsyncClient* client) {                              // If Statement for Client DISCONNECT Handeling   
-	Serial.printf("\n client %s disconnected \n", client->remoteIP().toString().c_str());     // Print Disconnect IP to Screen
-}
-
-static void handleTimeOut(void* arg, AsyncClient* client, uint32_t time) {                  // If Statement for Client TIMEOUT Handeling    
-	Serial.printf("\n client ACK timeout ip: %s \n", client->remoteIP().toString().c_str());  // Write Timeout IP to Screen
-}
-
-
-//////////////////  Server Events /////////////////////////////
-static void handleNewClient(void* arg, AsyncClient* client) {                                                    // If Statement for new Client CONNECTION Handeling 
-	Serial.printf("\n new client has been connected to server, ip: %s", client->remoteIP().toString().c_str());   // Client Connection IP to Screen
-
-	clients.push_back(client);                          // Add Client to Generated List
-	
-	// Register Events
-	client->onData(&handleData, NULL);
-	client->onError(&handleError, NULL);
-	client->onDisconnect(&handleDisconnect, NULL);
-	client->onTimeout(&handleTimeOut, NULL);
-}
-
-void setup() {
-	Serial.begin(115200);
-	delay(20);
-	
-	// Create Access Point
-	while (!WiFi.softAP(SSID, PASSWORD, 6, false, 15)) {
-		delay(500);
-	}
-
-	// Start DNS Server
-	if (!DNS.start(DNS_PORT, SERVER_HOST_NAME, WiFi.softAPIP()))  //If Server Failed to Start
-		Serial.printf("\n failed to start dns service \n");         //Print Fail Message
-
-	AsyncServer* server = new AsyncServer(TCP_PORT);             // Start Listening on TCP Port 7050
-	server->onClient(&handleNewClient, server);                  // Set up Client Event Handeling
-	server->begin();                                             // Start Server communication
-}
-
-void loop() {
-	DNS.processNextRequest();                                    // Procss DNS Requests
+ 
+void loop(){
+  
 }
