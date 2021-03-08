@@ -2,7 +2,7 @@
 //                                         //
 //         Authors: Salim El Atache        //
 //             & Carson Morris             //
-//         Class: CAM8302E - 012           //
+//         Class: 21W_ELE8968_011           //
 //                 Lab: 5                  //
 //           Date: 07-03-2021              //
 //                                         //
