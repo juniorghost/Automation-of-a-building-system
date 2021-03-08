@@ -38,14 +38,14 @@ int DeadBand = 2;             // Deadband Temperature Oscillation Varaible
 
 
 void setup() {
-  Serial.begin(9600);                                // Start Serial for Printing
-  display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR);    // Start OLED Screen and allow printing to specified address.
+  Serial.begin(9600);                               // Start Serial for Printing
+  display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR);   // Start OLED Screen and allow printing to specified address.
 
-  dht.begin();                                       // Start DHT22 Object
+  dht.begin();                                      // Start DHT22 Object
 
   pinMode(fanRelay, OUTPUT);                        // Delclare fanRelay as an Output
-  digitalWrite(fanRelay, LOW);                         // Start fanRelay OFF
-  pinMode(heatRelay, OUTPUT);                       // Delclare h                                           eatRelay as an Output
+  digitalWrite(fanRelay, LOW);                      // Start fanRelay OFF
+  pinMode(heatRelay, OUTPUT);                       // Delclare heatRelay as an Output
   digitalWrite(heatRelay, LOW);                     // Start heatRelay OFF
 }
 
