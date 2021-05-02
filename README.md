@@ -1,5 +1,5 @@
 # Automated-Building-System
-Written by Salim El Atache & Carson Morris 
+Written by Salim El Atache & Carson Morris  // Date: 07-03-2021
 
 The purpose of this project was to mimic an automated building system using two ESP8266s (one for the server the other for the client) and different sensors 
 like the DHT22, PIR (motion sensor) and an RF ID reader.
