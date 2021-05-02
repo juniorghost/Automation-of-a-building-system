@@ -1,4 +1,4 @@
-# AUtomated-Building-System
+# Automated-Building-System
 Written by Salim El Atache & Carson Morris 
 
 The purpose of this project was to mimic an automated building system using two ESP8266s (one for the server the other for the client) and different sensors 
