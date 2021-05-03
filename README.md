@@ -3,7 +3,7 @@ Written by Salim El Atache & Carson Morris  // Date: 07-03-2021
 
 The purpose of this project was to mimic an automated building system using two ESP8266s (one for the server the other for the client) and different sensors 
 like the DHT22, PIR (motion sensor) and an RF ID reader.
-We transfer the Data like room temperature, motion and RF reader ID to the client using a Wi-Fi access point and depending on the settings we either turn ON/
+We transfer the Data for example: room temperature, motion and RF reader ID to the client using a Wi-Fi access point and depending on the settings we either turn ON/
 OFF multiple relays (Heater, Fan and Lock).
 
 Enjoy!
